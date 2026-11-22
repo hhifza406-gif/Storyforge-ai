@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101321">
+<title>StoryForge AI — Automatic Movie Maker</title>
+<style>
+:root{--bg:#0d1020;--panel:#171c30;--panel2:#202741;--line:#343d59;--text:#f5f6ff;--muted:#aeb7d0;--purple:#a78bfa;--cyan:#67e8f9;--good:#86efac}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#29204c 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+main{max-width:1180px;margin:auto;padding:18px}.top{padding:22px 4px 12px}.top h1{font-size:clamp(27px,5vw,42px);margin:0}.top p{color:var(--muted);max-width:850px}
+.panel{background:linear-gradient(145deg,var(--panel),#14192a);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0;box-shadow:0 10px 30px #0002}
+h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label{display:block;color:#dce2f6;font-size:13px;margin:7px 0 5px}
+input,textarea,select{width:100%;background:#0e1425;color:var(--text);border:1px solid #3a4564;border-radius:10px;padding:11px;font:inherit}
+textarea{min-height:170px;resize:vertical}.short{min-height:80px}
+button{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(110deg,var(--purple),#7dd3fc);color:#111326;font-weight:750;cursor:pointer;margin:5px 5px 0 0}
+button.alt{background:#303b59;color:#f5f6ff}button:disabled{opacity:.45;cursor:not-allowed}
+.muted,.note{color:var(--muted)}.note{font-size:13px}.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.step{background:#101629;border:1px solid var(--line);padding:11px;border-radius:12px}
+.style{display:flex;gap:10px;align-items:center;background:#101629;border:1px solid var(--line);border-radius:12px;padding:10px;margin:7px 0}.style input{width:auto}
+.pill{display:inline-block;padding:3px 8px;border-radius:20px;background:#312b55;color:#d9ccff;font-size:12px}
+#castList,#sceneList{display:grid;gap:9px}.castrow,.scene{background:#101629;border:1px solid var(--line);border-radius:12px;padding:12px}
+.castrow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}.scenehead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.progress{height:8px;border-radius:10px;background:#303955;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan))}
+#preview{width:100%;background:#050711;border:1px solid var(--line);border-radius:14px;display:block;max-height:440px}
+#log{white-space:pre-wrap;background:#0d1424;padding:12px;border-radius:10px;max-height:220px;overflow:auto;color:#dce4ff}
+footer{color:var(--muted);font-size:12px;padding:15px 4px 35px}
+@media(max-width:650px){main{padding:12px}.castrow{grid-template-columns:1fr 1fr}.castrow .wide{grid-column:1/-1}}
+</style>
+</head>
+<body><main>
+<header class="top">
+<div class="pill">FREE • BROWSER-BASED MVP</div>
+<h1>🎬 StoryForge AI — Automatic Movie Maker</h1>
+<p>اپنی کہانی یا اسکرپٹ پیسٹ کریں۔ StoryForge کردار، مناظر، ڈائیلاگ اور پروڈکشن پرامپٹس ترتیب دے گا۔ حقیقت جیسا، 3D یا اینیمی انداز منتخب کریں، پھر ایک متحرک پریویو ویڈیو بنائیں۔</p>
+</header>
+
+<section class="panel">
+<h2>1 — اپنی کہانی شامل کریں</h2>
+<label for="story">کہانی / مکمل اسکرپٹ</label>
+<textarea id="story" placeholder="یہاں اپنی کہانی پیسٹ کریں۔ بہتر نتائج کے لیے ہر منظر کو SCENE 1، SCENE 2 یا منظر 1، منظر 2 سے شروع کریں۔ مکالمے اس طرح لکھیں: علی: ہمیں یہاں سے جانا ہوگا۔"></textarea>
+<div class="grid">
+<div><label for="project">فلم یا سیریز کا نام</label><input id="project" value="میری پہلی فلم"></div>
+<div><label for="language">مکالموں کی زبان</label><select id="language"><option value="ur-PK">اردو</option><option value="hi-IN">ہندی</option><option value="en-US">English</option><option value="ar-SA">عربی</option><option value="ur">اردو (جنرل)</option></select></div>
+<div><label for="format">پروجیکٹ کی قسم</label><select id="format"><option>فلم</option><option>ڈرامہ قسط</option><option>ویب سیریز</option><option>مختصر ویڈیو</option></select></div>
+<div><label for="ratio">ویڈیو فارمیٹ</label><select id="ratio"><option value="16:9">16:9 — YouTube / فلم</option><option value="9:16">9:16 — Shorts / Reels</option><option value="1:1">1:1 — Square</option></select></div>
+</div>
+</section>
+
+<section class="panel">
+<h2>2 — فلم کا بصری انداز منتخب کریں</h2>
+<div class="grid">
+<label class="style"><input type="radio" name="visual" value="realistic" checked><span><b>حقیقت جیسا سنیما</b><br><small class="muted">Realistic cinematic look</small></span></label>
+<label class="style"><input type="radio" name="visual" value="3d"><span><b>3D اینیمیٹڈ فلم</b><br><small class="muted">3D animated movie</small></span></label>
+<label class="style"><input type="radio" name="visual" value="anime"><span><b>اینیمی / کارٹون</b><br><small class="muted">Anime and cartoon</small></span></label>
+</div>
+<div class="grid">
+<div><label for="quality">پریویو کی کوالٹی</label><select id="quality"><option value="720">720p</option><option value="1080">1080p</option></select></div>
+<div><label for="sceneSecs">ہر سین کی پریویو مدت</label><select id="sceneSecs"><option value="5">5 سیکنڈ</option><option value="8" selected>8 سیکنڈ</option><option value="12">12 سیکنڈ</option></select></div>
+<div><label for="voice">آواز</label><select id="voice"><option value="on">براؤزر کی دستیاب Text-to-Speech آواز</option><option value="off">صرف ٹیکسٹ / خاموش ویڈیو</option></select></div>
+</div>
+<p class="note">نوٹ: آواز کی دستیابی آپ کے موبائل/براؤزر کی زبانوں پر منحصر ہے۔</p>
+</section>
+
+<section class="panel">
+<h2>3 — کہانی سے کردار اور مناظر نکالیں</h2>
+<p class="muted">یہ ٹول اسکرپٹ کے سین ہیڈنگز اور “کردار: مکالمہ” والی لائنوں سے خودکار طور پر معلومات نکالتا ہے۔ نتائج کو آپ خود بھی تبدیل کر سکتے ہیں۔</p>
+<button id="analyze">کہانی کا تجزیہ کریں اور سین بنائیں</button><button class="alt" id="addCharacter">+ کردار شامل کریں</button>
+<h3 style="margin-top:16px">کردار (Cast)</h3><div id="castList" class="muted">ابھی کردار نہیں ملے۔</div>
+<h3 style="margin-top:16px">مناظر (Scenes)</h3><div id="sceneList" class="muted">کہانی کا تجزیہ کرنے کے بعد مناظر یہاں آئیں گے۔</div>
+</section>
+
+<section class="panel">
+<h2>4 — ویڈیو بنانے کا اسٹوڈیو</h2>
+<div class="steps">
+<div class="step">① کرداروں کی تفصیل</div><div class="step">② منظر اور بیک گراؤنڈ</div><div class="step">③ مکالمے اور آواز</div><div class="step">④ ویڈیو پریویو</div>
+</div>
+<div class="actions"><button id="makeVideo">متحرک ویڈیو پریویو بنائیں</button><button class="alt" id="stopVideo">روکیں</button><button class="alt" id="downloadVideo" disabled>WebM ویڈیو ڈاؤن لوڈ</button></div>
+<div class="progress"><div class="bar" id="bar"></div></div><p id="status" class="note">پہلے کہانی کا تجزیہ کریں۔</p>
+<canvas id="preview" width="1280" height="720"></canvas>
+<p class="note">یہ ویڈیو آپ کے منتخب انداز کے مطابق متحرک ٹائٹل، سین کی تفصیل، کردار اور ڈائیلاگ کارڈز سے بنتی ہے۔ یہ حقیقی AI-generated اداکاروں، قدرتی lip-sync یا مکمل live-action مناظر نہیں بناتی۔</p>
+</section>
+
+<section class="panel">
+<h2>5 — AI ویڈیو ماڈل کے لیے مکمل پرامپٹس</h2>
+<p class="muted">ہر سین کے لیے الگ ویڈیو جنریشن پرامپٹ تیار کریں۔ اسے کسی بھی ایسے AI ویڈیو ماڈل میں استعمال کیا جا سکتا ہے جو آپ کے پاس دستیاب ہو۔ یہ حصہ آپ کو کسی مخصوص ادا شدہ سروس سے منسلک نہیں کرتا۔</p>
+<button id="prompts">تمام سینز کے پرامپٹس بنائیں</button><button class="alt" id="downloadPrompts">پرامپٹس TXT ڈاؤن لوڈ</button>
+<pre id="log">پرامپٹس ابھی تیار نہیں ہوئے۔</pre>
+</section>
+
+<section class="panel">
+<h2>6 — پروجیکٹ محفوظ کریں</h2>
+<button id="save">پروجیکٹ براؤزر میں محفوظ کریں</button><button class="alt" id="load">محفوظ پروجیکٹ کھولیں</button><button class="alt" id="export">پروجیکٹ JSON ڈاؤن لوڈ</button>
+<p class="note">محفوظ کرنا اسی ڈیوائس اور اسی براؤزر میں ہوتا ہے۔ اہم کام کی JSON فائل بھی ڈاؤن لوڈ کر لیں۔</p>
+</section>
+
+<section class="panel">
+<h2>اہم حقیقت — مفت ویڈیو جنریشن کی حدود</h2>
+<p class="muted">یہ مکمل قابلِ استعمال ابتدائی پروڈکشن ورک فلو ہے: اسکرپٹ پارسنگ، کاسٹ ایڈیٹنگ، سین ایڈیٹنگ، پرامپٹ بنانا، براؤزر آواز اور WebM پریویو مقامی طور پر چلتے ہیں۔ لیکن صرف HTML/JavaScript سے حقیقی AI ویڈیو ماڈل خود بخود نہیں چلتا۔ حقیقی حرکت کرتے ہوئے AI کرداروں اور ماحول کے لیے ایک ویڈیو ماڈل اور کمپیوٹنگ درکار ہے۔ اس ورژن میں کوئی چھپی ہوئی API، paid credits یا غیر فعال AI بٹن نہیں ہیں۔</p>
+</section>
+<footer>StoryForge AI • Local-first demo • API key کی ضرورت نہیں • فائلیں آپ کے براؤزر میں رہتی ہیں۔</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);let cast=[],scenes=[],recorded=null,recorder=null,raf=null,stopFlag=false;
+const visual=()=>document.querySelector('input[name="visual"]:checked').value;
+const styleName=()=>({realistic:"photorealistic cinematic live-action style, natural human proportions, realistic lighting", "3d":"high quality 3D animated feature film style, expressive stylized characters, detailed 3D environments", anime:"cinematic anime illustration style, expressive anime characters, detailed hand-painted backgrounds"}[visual()]);
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function analyze(){
+ const text=$('story').value.trim();if(!text){alert('پہلے اپنی کہانی یا اسکرپٹ پیسٹ کریں۔');return}
+ const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const sceneHeads=/^(scene\s*\d+|سین\s*\d+|منظر\s*\d+|سین[:：]|منظر[:：])/i;
+ let chunks=[],current=[];
+ lines.forEach(line=>{if(sceneHeads.test(line)&&current.length){chunks.push(current);current=[line]}else current.push(line)});
+ if(current.length)chunks.push(current);
+ if(chunks.length===1){
+   const sentences=text.split(/(?<=[۔.!?])\s+/).filter(Boolean);chunks=[];
+   const step=Math.max(2,Math.ceil(sentences.length/Math.min(8,Math.max(1,Math.ceil(sentences.length/3)))));
+   for(let i=0;i<sentences.length;i+=step)chunks.push(sentences.slice(i,i+step));
+ }
+ scenes=chunks.map((arr,i)=>{let raw=arr.join('\n');let dialogue=arr.filter(x=>/^[\p{L}\p{N}_ -]{1,30}\s*[:：]/u.test(x));let title=arr[0].replace(sceneHeads,'').replace(/^[-:：\s]+/,'').trim()||`منظر ${i+1}`;return {title:title.slice(0,70),background:'اسکرپٹ کے مطابق مناسب مقام اور ماحول',action:raw,dialogue:dialogue.join('\n'),duration:+$('sceneSecs').value}});
+ const names=new Set();lines.forEach(line=>{let m=line.match(/^([\p{L}\p{N}_ -]{1,30})\s*[:：]\s*(.+)$/u);if(m){let n=m[1].trim();if(!/^(راوی|narrator|voice over|وائس اوور)$/i.test(n))names.add(n)}});
+ cast=[...names].map((name,i)=>({name,role:i<3?'مرکزی':'سائیڈ',look:'اسکرپٹ کے مطابق مستقل چہرہ، بال، لباس اور عمر کا ظاہری انداز'}));
+ renderCast();renderScenes();$('status').textContent=`تجزیہ مکمل: ${cast.length} کردار، ${scenes.length} مناظر۔ کردار اور مناظر تبدیل کر سکتے ہیں۔`;
+}
+function renderCast(){
+ $('castList').innerHTML=cast.length?'':'<p class="muted">کوئی کردار نہیں ملا۔ + کردار شامل کریں استعمال کریں۔</p>';
+ cast.forEach((c,i)=>{let d=document.createElement('div');d.className='castrow';d.innerHTML=`<div><label>کردار کا نام</label><input data-c="${i}" data-k="name" value="${escapeHTML(c.name)}"></div><div><label>کردار کی قسم</label><select data-c="${i}" data-k="role"><option ${c.role==='مرکزی'?'selected':''}>مرکزی</option><option ${c.role==='سائیڈ'?'selected':''}>سائیڈ</option></select></div><div class="wide"><label>شکل / لباس / تسلسل</label><input data-c="${i}" data-k="look" value="${escapeHTML(c.look)}"></div><button class="alt" data-del="${i}">حذف</button>`;$('castList').appendChild(d)});
+ $('castList').querySelectorAll('[data-c]').forEach(el=>el.onchange=()=>cast[+el.dataset.c][el.dataset.k]=el.value);
+ $('castList').querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{cast.splice(+el.dataset.del,1);renderCast()});
+}
+function renderScenes(){
+ $('sceneList').innerHTML='';
+ scenes.forEach((s,i)=>{let d=document.createElement('div');d.className='scene';d.innerHTML=`<div class="scenehead"><b>منظر ${i+1}</b><button class="alt" data-remove="${i}">منظر حذف کریں</button></div><label>منظر کا نام</label><input data-s="${i}" data-k="title" value="${escapeHTML(s.title)}"><label>بیک گراؤنڈ / لوکیشن</label><input data-s="${i}" data-k="background" value="${escapeHTML(s.background)}"><label>ایکشن اور تفصیل</label><textarea class="short" data-s="${i}" data-k="action">${escapeHTML(s.action)}</textarea><label>ڈائیلاگ</label><textarea class="short" data-s="${i}" data-k="dialogue">${escapeHTML(s.dialogue)}</textarea>`;$('sceneList').appendChild(d)});
+ $('sceneList').querySelectorAll('[data-s]').forEach(el=>el.onchange=()=>scenes[+el.dataset.s][el.dataset.k]=el.value);
+ $('sceneList').querySelectorAll('[data-remove]').forEach(el=>el.onclick=()=>{scenes.splice(+el.dataset.remove,1);renderScenes()});
+}
+$('analyze').onclick=analyze;
+$('addCharacter').onclick=()=>{cast.push({name:'نیا کردار',role:'سائیڈ',look:'ظاہری شکل اور لباس لکھیں'});renderCast()};
+function promptText(){
+ let header=`PROJECT: ${$('project').value}\nSTYLE: ${styleName()}\nLANGUAGE: ${$('language').selectedOptions[0].text}\nCONTINUITY: Keep each character's face, hair, costume, age appearance and proportions consistent across all scenes.\n`;
+ return header+'\n'+scenes.map((s,i)=>`SCENE ${i+1}: ${s.title}\nVISUAL: ${styleName()}\nLOCATION / BACKGROUND: ${s.background}\nACTION: ${s.action}\nCHARACTERS: ${cast.map(c=>`${c.name} (${c.role}; ${c.look})`).join('; ')}\nDIALOGUE (${ $('language').selectedOptions[0].text }): ${s.dialogue||'Use the supplied story action; do not invent dialogue.'}\nCAMERA: cinematic establishing shot, medium dialogue coverage, close-up reactions, smooth camera movement.\nAUDIO: natural ambience, clear dialogue, subtle background score. No captions or text artifacts unless requested.\n`).join('\n'+'-'.repeat(65)+'\n\n');
+}
+$('prompts').onclick=()=>{if(!scenes.length){alert('پہلے کہانی کا تجزیہ کریں۔');return}$('log').textContent=promptText()};
+$('downloadPrompts').onclick=()=>{if(!scenes.length){alert('پہلے پرامپٹس تیار کریں۔');return}download('storyforge-scene-prompts.txt',promptText(),'text/plain')};
+function download(name,data,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
+function projectData(){return {project:$('project').value,story:$('story').value,language:$('language').value,format:$('format').value,ratio:$('ratio').value,visual:visual(),cast,scenes}}
+$('save').onclick=()=>{localStorage.setItem('storyforgeMovieProject',JSON.stringify(projectData()));$('status').textContent='پروجیکٹ اس براؤزر میں محفوظ ہوگیا۔'};
+$('load').onclick=()=>{let d=localStorage.getItem('storyforgeMovieProject');if(!d)return alert('کوئی محفوظ پروجیکٹ نہیں ملا۔');applyProject(JSON.parse(d))};
+$('export').onclick=()=>download('storyforge-project.json',JSON.stringify(projectData(),null,2),'application/json');
+function applyProject(d){$('project').value=d.project||'';$('story').value=d.story||'';$('language').value=d.language||'ur-PK';$('format').value=d.format||'فلم';$('ratio').value=d.ratio||'16:9';let r=document.querySelector(`input[name="visual"][value="${d.visual||'realistic'}"]`);if(r)r.checked=true;cast=d.cast||[];scenes=d.scenes||[];renderCast();renderScenes();$('status').textContent='پروجیکٹ لوڈ ہوگیا۔'}
+function drawFrame(ctx,canvas,s,idx,total,t){
+ const w=canvas.width,h=canvas.height;let g=ctx.createLinearGradient(0,0,w,h);
+ let palettes=visual()==='realistic'?['#15233c','#593c42']:visual()==='3d'?['#173d59','#754a91']:['#1a255a','#8a3d72'];
+ g.addColorStop(0,palettes[0]);g.addColorStop(1,palettes[1]);ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+ let glow=ctx.createRadialGradient(w*.72,h*.25,10,w*.72,h*.25,w*.6);glow.addColorStop(0,'#ffffff22');glow.addColorStop(1,'#ffffff00');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+ ctx.fillStyle='#05071366';ctx.fillRect(0,h*.66,w,h*.34);
+ ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`bold ${Math.round(w*.047)}px system-ui`;wrapText(ctx,$('project').value||'StoryForge',w/2,h*.19,w*.82,Math.round(w*.06));
+ ctx.font=`bold ${Math.round(w*.038)}px system-ui`;wrapText(ctx,`منظر ${idx+1}: ${s.title}`,w/2,h*.39,w*.82,Math.round(w*.052));
+ ctx.font=`${Math.round(w*.024)}px system-ui`;wrapText(ctx,s.background,w/2,h*.52,w*.82,Math.round(w*.038));
+ let castText=cast.slice(0,5).map(c=>c.name).join(' • ');ctx.fillStyle='#e4e8ff';ctx.font=`${Math.round(w*.021)}px system-ui`;wrapText(ctx,castText,w/2,h*.73,w*.85,Math.round(w*.032));
+ let dlg=s.dialogue||s.action;ctx.fillStyle='#fff';ctx.font=`${Math.round(w*.025)}px system-ui`;wrapText(ctx,dlg.slice(0,230),w/2,h*.84,w*.85,Math.round(w*.036));
+ ctx.fillStyle='#ffffff99';ctx.font=`${Math.round(w*.017)}px system-ui`;ctx.fillText(`${idx+1} / ${total}`,w/2,h*.96);
+}
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){let words=String(text).split(/\s+/),line='',lines=[];for(let word of words){let test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);lines=lines.slice(0,4);lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight))}
+function speak(text){if($('voice').value==='off'||!('speechSynthesis'in window))return;let u=new SpeechSynthesisUtterance(text.slice(0,450));u.lang=$('language').value;u.rate=.92;speechSynthesis.cancel();speechSynthesis.speak(u)}
+$('stopVideo').onclick=()=>{stopFlag=true;if(recorder&&recorder.state==='recording')recorder.stop();if(raf)cancelAnimationFrame(raf);speechSynthesis?.cancel?.();$('status').textContent='ویڈیو پریویو روک دیا گیا۔'};
+$('makeVideo').onclick=async()=>{
+ if(!scenes.length){alert('پہلے کہانی کا تجزیہ کریں۔');return}
+ if(!HTMLCanvasElement.prototype.captureStream||!window.MediaRecorder){alert('اس براؤزر میں ویڈیو ریکارڈنگ دستیاب نہیں۔ Chrome کا تازہ ورژن استعمال کریں۔');return}
+ stopFlag=false;$('makeVideo').disabled=true;$('downloadVideo').disabled=true;recorded=null;
+ let canvas=$('preview'),ctx=canvas.getContext('2d'),ratio=$('ratio').value;
+ canvas.width=ratio==='9:16'?720:ratio==='1:1'?720:1280;canvas.height=ratio==='9:16'?1280:ratio==='1:1'?720:720;
+ let stream=canvas.captureStream(24),chunks=[];try{recorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'})}catch(e){recorder=new MediaRecorder(stream)}
+ recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+ recorder.onstop=()=>{recorded=new Blob(chunks,{type:'video/webm'});$('downloadVideo').disabled=false;$('status').textContent='ویڈیو پریویو تیار ہے۔ WebM ڈاؤن لوڈ کریں۔';$('makeVideo').disabled=false;stream.getTracks().forEach(t=>t.stop())};
+ recorder.start();
+ let idx=0,frames=Math.max(1,+$('sceneSecs').value*24),f=0,last=performance.now();
+ function frame(now){if(stopFlag){if(recorder.state==='recording')recorder.stop();return}
+ let s=scenes[idx];drawFrame(ctx,canvas,s,idx,scenes.length,now);f++;
+ $('bar').style.width=((idx+f/frames)/scenes.length*100)+'%';
+ if(f>=frames){speak(s.dialogue||s.action);idx++;f=0;if(idx>=scenes.length){if(recorder.state==='recording')recorder.stop();return}}
+ raf=requestAnimationFrame(frame)}
+ $('status').textContent='ویڈیو ریکارڈ ہو رہی ہے — اسکرین کھلی رکھیں۔';raf=requestAnimationFrame(frame);
+};
+$('downloadVideo').onclick=()=>{if(recorded)download('storyforge-preview.webm',recorded,'video/webm')};
+</script></body></html>
